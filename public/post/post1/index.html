@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.74.3" />
+
+
+<title>Modeling trends of COVID-19 confirmed cases using linear regression! - My New Hugo Site</title>
+<meta property="og:title" content="Modeling trends of COVID-19 confirmed cases using linear regression! - My New Hugo Site">
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/%3cnil%3e"
+         width=""
+         height=""
+         alt="">
+  </a>
+
+  <ul class="nav-links">
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">3 min read</span>
+    
+
+    <h1 class="article-title">Modeling trends of COVID-19 confirmed cases using linear regression!</h1>
+
+    
+    <span class="article-date">2021-04-02</span>
+    
+
+    <div class="article-content">
+      
+
+
+<div id="data-collection-and-processing" class="section level2">
+<h2>Data collection and processing</h2>
+<p>First, we collect the covid-19 data from the website <a href="https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv" class="uri">https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv</a>. And do some data cleaning using R to obtain a cleaned data frame.</p>
+<pre class="r"><code>library(readr)
+library(dplyr)
+library(tidyverse)
+library(tidyr)</code></pre>
+<pre class="r"><code>confirmedraw &lt;- read.csv(&quot;https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv&quot;, head = TRUE,stringsAsFactors = FALSE)
+
+regions &lt;- sort(unique(confirmedraw$Country.Region))
+n &lt;- length(regions)
+df &lt;- c()
+for(i in 1:n) {
+  d &lt;- confirmedraw[confirmedraw$Country.Region == regions[i],]
+  df &lt;- cbind(df, apply(d[,-c(1:4)], 2, sum))
+}
+row.names(df) &lt;- 1:nrow(df)
+df &lt;- data.frame(df)
+colnames(df) &lt;- regions
+dates &lt;- seq(as.Date(&quot;2020-01-22&quot;),
+    as.Date(gsub(&quot;X&quot;,&quot;&quot;,colnames(confirmedraw)[ncol(confirmedraw)]),&quot;%m.%d.%y&quot;),1)
+
+df &lt;- mutate(df, 
+             date = dates,
+             total = rowSums(df[,-ncol(df)]))</code></pre>
+</div>
+<div id="data-visualizations" class="section level2">
+<h2>Data visualizations</h2>
+<pre class="r"><code>df %&gt;% filter( as.Date(&quot;2020-01-22&quot;) &lt;= date &amp; date &lt;= as.Date(&quot;2021-03-31&quot;)) %&gt;%
+ggplot(aes(date, total)) + geom_line() + ylab(&quot;Cumulative confirmed cases&quot;) +
+  theme_bw()</code></pre>
+<p><img src="/post/post1_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Figure 1 shows the global trend of covid-19, it can be seen clearly the world faced with serious situation that the confirmed cases of covid-19 is still increasing quickly from the 2020-01 to 2021-03.</p>
+<pre class="r"><code>df2 &lt;- df[,c(&quot;date&quot;,&quot;China&quot;,&quot;US&quot;,&quot;Canada&quot;,&quot;Germany&quot;)]
+
+df3 &lt;- gather(df2, &quot;Region&quot;, &quot;count&quot;, -date)
+
+df3 %&gt;% ggplot( aes(date, count, color = Region))  + geom_line() + 
+     ylab(&quot;Cumulative confirmed cases&quot;) +
+     theme_bw()</code></pre>
+<p><img src="/post/post1_files/figure-html/unnamed-chunk-4-1.png" width="729.6" /></p>
+<p>Figure 2 shows the trends of covid-19 in the 4 countres “China”,“US”,“Canada”,“Germany” respecitvely, clearly, it can be seen the cases in US are most and situation is worst that the increasing speed and cases are both highest. For China, the line is almost horizonal now while the countries Canada and Germany are in the middle.</p>
+<pre class="r"><code>df3 %&gt;% ggplot( aes(date, count, color = Region))  + geom_line() + 
+     ylab(&quot;Log scale of cumulative confirmed cases&quot;) +
+     theme_bw() + scale_y_log10()</code></pre>
+<p><img src="/post/post1_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Figure 3 shows the trends of covid-19 in log scales for the above 4 countries, clearly, it shows the speed of the increasing of new confirmed cases, that China has almost with a speed 0 compared the other 3 countries, it indicates the convid-19 in China is controlled very well but in other countries, the situations are very seriously.</p>
+<pre class="r"><code>df3 %&gt;% filter(as.Date(&quot;2020-04-01&quot;) &lt;= date) %&gt;% 
+  ggplot( aes(date, count, color = Region))  + geom_line() + 
+     ylab(&quot;Log scale of cumulative confirmed cases&quot;) +
+     theme_bw() + scale_y_log10() +  geom_smooth(method = &quot;lm&quot;, fill = NA) </code></pre>
+<p><img src="/post/post1_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Figure 4 shows that linear trend models can be used to modeling the trends of the covid-19 in log-scales for main countries in the world. And clearly, China has a slope close to 0, while the US trend fits the linear model the best while the other two countries fit little worse but overall, the linear models capture the trends of increasing of new confirmed cases for these countries.</p>
+<p>In conclusion, this study finds that for different countries in the world, the linear model could be used to model the trends of the covid-19 in log-scales well overall, this might be very helpful to make predictions of the new confirmed cases in future, and the governments could make better decisions in dealing with the cases such as preparing enough masks, hospital beds and other resources.</p>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js//highlight.min.js"></script>
+
+
+
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
