@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on My New Hugo Site</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 02 Apr 2021 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Modeling trends of COVID-19 confirmed cases using linear regression!</title>
+      <link>/post/post1/</link>
+      <pubDate>Fri, 02 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/post1/</guid>
+      <description>Data collection and processingFirst, we collect the covid-19 data from the website https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv. And do some data cleaning using R to obtain a cleaned data frame.
+library(readr)library(dplyr)library(tidyverse)library(tidyr)confirmedraw &amp;lt;- read.csv(&amp;quot;https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv&amp;quot;, head = TRUE,stringsAsFactors = FALSE)regions &amp;lt;- sort(unique(confirmedraw$Country.Region))n &amp;lt;- length(regions)df &amp;lt;- c()for(i in 1:n) {d &amp;lt;- confirmedraw[confirmedraw$Country.Region == regions[i],]df &amp;lt;- cbind(df, apply(d[,-c(1:4)], 2, sum))}row.names(df) &amp;lt;- 1:nrow(df)df &amp;lt;- data.</description>
+    </item>
+    
+  </channel>
+</rss>
